@@ -65,12 +65,16 @@ jobs:
             const title = pr.title.trim()
             const words = title.split(/\s+/).filter(Boolean)
 
-            // The title is attacker-controlled and gets echoed into a comment
-            // posted by our account. Inside backticks a backtick closes the
-            // code span, so a crafted title could inject arbitrary markdown -
-            // a fake approval badge, a phishing link - under our name. Strip
-            // backticks and newlines, and cap the length.
-            const quoted = title.replace(/[`\r\n]/g, ' ').slice(0, 120)
+            // Values echoed into the comment are attacker-controlled: the
+            // title directly, and the file list below, since a fork
+            // contributor names the files. Inside backticks a backtick closes
+            // the code span, so a crafted value could inject arbitrary markdown
+            // - a fake approval badge, a phishing link - under our name. Strip
+            // backticks and newlines, and cap the length. Use one sanitizer for
+            // every such value so none is missed.
+            const sanitizeQuoted = (value) =>
+              String(value).replace(/[`\r\n]/g, ' ').slice(0, 120)
+            const quoted = sanitizeQuoted(title)
 
             if (title.length < 15 || words.length < 3) {
               problems.push([
@@ -141,7 +145,7 @@ jobs:
               problems.push([
                 '**This PR touches paths the public mirror does not accept.**',
                 '',
-                offending.slice(0, 15).map((f) => '- `' + f + '`').join('\n'),
+                offending.slice(0, 15).map((f) => '- `' + sanitizeQuoted(f) + '`').join('\n'),
                 offending.length > 15
                   ? '\n_...and ' + (offending.length - 15) + ' more._'
                   : '',
