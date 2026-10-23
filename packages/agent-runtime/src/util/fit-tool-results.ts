@@ -3,6 +3,13 @@ import { countTokensMessages } from './token-counter'
 import type { Message } from '@codebuff/common/types/messages/codebuff-message'
 import type { JSONValue } from '@codebuff/common/types/json'
 
+/** Narrowing helper: `Array.isArray` does not remove readonly array members
+ * from a union, so a JSON value that may be a readonly array still needs to be
+ * excluded before its object properties are read. */
+function isArray(value: unknown): value is readonly unknown[] {
+  return Array.isArray(value)
+}
+
 /** Only used when fresh results cannot fit even with all older history removed. */
 export function fitToolResults(
   messages: Message[],
@@ -51,7 +58,7 @@ export function fitToolResults(
           if (
             !file ||
             typeof file !== 'object' ||
-            Array.isArray(file) ||
+            isArray(file) ||
             typeof file.path !== 'string' ||
             typeof file.content !== 'string'
           )
