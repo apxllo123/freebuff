@@ -7,6 +7,8 @@ export type JSONValue =
   | boolean
   | JSONObject
   | JSONArray
+  | Readonly<JSONObject>
+  | readonly JSONValue[]
 export const jsonValueSchema: z.ZodType<JSONValue> = z.lazy(() =>
   z.union([
     z.null(),
